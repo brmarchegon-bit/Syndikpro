@@ -1,0 +1,676 @@
+<div class="ov" id="mod-new-ticket">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-new-ticket')">✕</button>
+    <h3>📩 تذكرة دعم جديدة</h3>
+    <div class="fg">
+      <label>النوع *</label>
+      <select id="ticket-cat">
+        <option value="support">🆘 طلب دعم</option>
+        <option value="technical">🔧 مشكل تقني</option>
+        <option value="info">ℹ️ طلب معلومة</option>
+        <option value="payment">💳 مشكل في الأداء</option>
+      <option value="other">📝 أخرى</option>
+      </select>
+    </div>
+    <div class="fg"><label>العنوان *</label><input id="ticket-title" placeholder="ملخص المشكلة أو الطلب"></div>
+    <div class="fg"><label>التفاصيل</label><textarea id="ticket-desc" rows="4" placeholder="اشرح بالتفصيل..."></textarea></div>
+    <button class="btn btn-p btn-full" onclick="submitTicket()">📤 إرسال</button>
+  </div>
+</div>
+</div>
+
+<!-- TICKET REPLY MODAL (Admin) -->
+<div class="ov" id="mod-ticket-reply">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-ticket-reply')">✕</button>
+    <h3>💬 الرد على التذكرة</h3>
+    <div id="ticket-reply-info" style="background:#f8fafc;border-radius:10px;padding:12px;margin-bottom:12px;font-size:12px"></div>
+    <div class="fg"><label>ردك *</label><textarea id="ticket-reply-text" rows="4" placeholder="اكتب ردك هنا..."></textarea></div>
+    <div class="fg">
+      <label>تغيير الحالة</label>
+      <select id="ticket-reply-status">
+        <option value="progress">🟡 قيد المعالجة</option>
+        <option value="closed">✅ مغلقة</option>
+        <option value="open">🔴 مفتوحة</option>
+      </select>
+    </div>
+    <button class="btn btn-admin btn-full" onclick="submitTicketReply()">إرسال الرد</button>
+  </div>
+</div>
+
+<!-- SYNDIC DETAIL MODAL -->
+<div class="ov" id="mod-syndic-detail">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-syndic-detail')">✕</button>
+    <h3>📋 تفاصيل طلب السانديك</h3>
+    <div id="syndic-detail-body"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px">
+      <button class="btn btn-err btn-full" onclick="detailAction('reject')">❌ رفض</button>
+      <button class="btn btn-ok btn-full" onclick="detailAction('approve')">✅ قبول</button>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="mod-approve">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-approve')">✕</button>
+    <h3>✅ قبول السانديك</h3>
+    <div id="approve-info" style="background:#f8fafc;padding:12px;border-radius:8px;margin-bottom:12px;font-size:12px"></div>
+    <div class="fg"><label>الخطة</label>
+      <select id="approve-plan">
+        <option value="starter">🟢 Starter الانطلاقة — 39 درهم/شهر</option>
+        <option value="standard">🔵 Standard السنديك الحقيقي — 79 درهم/شهر</option>
+        <option value="professional">🟣 Professional احترافية — 129 درهم/شهر</option>
+        <option value="enterprise">🔴 Enterprise المدن والشركات — 199+ درهم</option>
+      </select>
+    </div>
+    <div class="fg"><label>مدة الاشتراك (أشهر)</label><input id="approve-months" type="number" value="1" min="1" max="24"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn btn-ok btn-full" onclick="approveSyndic('approve')">✅ قبول</button>
+      <button class="btn btn-err btn-full" onclick="approveSyndic('reject')">❌ رفض</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- COMPLAINT ALERT POPUP 🚨 -->
+<div class="comp-alert-overlay" id="comp-alert-ov">
+  <div class="comp-alert-box">
+    <div class="comp-alert-header">
+      <div class="comp-alert-pulse"></div>
+      <h3>🚨 شكايات تحتاج تدخلاً عاجلاً</h3>
+    </div>
+    <div class="comp-alert-body">
+      <div id="comp-alert-list"></div>
+    </div>
+    <div class="comp-alert-footer">
+      <button class="btn btn-err" style="flex:1" onclick="goToComplaints()">📋 معالجة الشكايات</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="dismissAlert()">تجاهل مؤقتاً</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- COMPLAINT DETAIL MODAL -->
+<div class="ov" id="mod-comp-detail">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-comp-detail')">✕</button>
+    <h3>📋 تفاصيل الشكاية</h3>
+    <div id="comp-detail-body"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px" id="comp-detail-actions"></div>
+  </div>
+</div>
+
+<!-- WORKER DETAIL MODAL -->
+<div class="ov" id="mod-worker-detail">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-worker-detail')">✕</button>
+    <h3>👷 بطاقة العامل</h3>
+    <div id="worker-detail-body"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px">
+      <button class="btn btn-err btn-full" id="worker-del-btn">🗑️ حذف</button>
+      <button class="btn btn-full" id="worker-pay-btn" style="background:linear-gradient(135deg,#059669,#34d399);color:#fff;border:none">💰 دفع الراتب</button>
+      <button class="btn btn-ghost btn-full" onclick="closeMod('mod-worker-detail')">إغلاق</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<button class="fab" id="fab" onclick="fabAction()" style="display:none">+</button>
+
+
+<!-- MODAL إعلان جديد -->
+<div class="ov" id="mod-announce">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-announce')">X</button>
+    <h3>📢 إعلان جديد</h3>
+    <div class="fg"><label>العنوان *</label><input id="ann-title" placeholder="موضوع الإعلان"></div>
+    <div class="fg"><label>التفاصيل</label><textarea id="ann-body" rows="3" placeholder="نص الإعلان..."></textarea></div>
+    <div class="fg"><label>الأولوية</label>
+      <select id="ann-priority">
+        <option value="normal">عادي</option>
+        <option value="urgent">عاجل 🔴</option>
+      </select>
+    </div>
+    <div class="fg"><label>تاريخ الانتهاء</label><input id="ann-expires" type="date"></div>
+    <div class="fg"><label>النوع</label>
+      <select id="ann-type">
+        <option value="info">معلومة 🔵</option>
+        <option value="alert">تنبيه ⚠️</option>
+        <option value="payment">أداء 💰</option>
+      </select>
+    </div>
+    <button class="btn btn-p btn-full" onclick="submitAnnouncement()">📢 نشر الإعلان</button>
+  </div>
+</div>
+<!-- MODAL إعلان جديد -->
+<div class="ov" id="mod-announce">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-announce')">✕</button>
+    <h3>📢 إعلان جديد</h3>
+    <div class="fg"><label>العنوان *</label><input id="ann-title" placeholder="موضوع الإعلان"></div>
+    <div class="fg"><label>التفاصيل</label><textarea id="ann-body" rows="3" placeholder="نص الإعلان..."></textarea></div>
+    <div class="fg"><label>الأولوية</label>
+      <select id="ann-priority">
+        <option value="normal">عادي</option>
+        <option value="urgent">عاجل 🔴</option>
+      </select>
+    </div>
+    <div class="fg"><label>تاريخ الانتهاء</label><input id="ann-expires" type="date"></div>
+    <div class="fg"><label>النوع</label>
+      <select id="ann-type">
+        <option value="info">معلومة ℹ️</option>
+        <option value="alert">تنبيه ⚠️</option>
+        <option value="payment">أداء 💰</option>
+      </select>
+    </div>
+    <button class="btn btn-p btn-full" onclick="submitAnnouncement()">📢 نشر الإعلان</button>
+  </div>
+</div>
+
+<!-- MODAL اجتماع وتصويت -->
+<div class="ov" id="mod-assembly-vote">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-assembly-vote')">✕</button>
+    <h3>🏛️ اجتماع وتصويت</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px">
+      <button class="btn btn-full" style="background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;padding:16px;border-radius:14px;font-size:14px;font-weight:700" onclick="closeMod('mod-assembly-vote');openAssemblyModal()">
+        🤝 اجتماع جديد
+      </button>
+      <button class="btn btn-full" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff;padding:16px;border-radius:14px;font-size:14px;font-weight:700" onclick="closeMod('mod-assembly-vote');openMod('mod-vote')">
+        🗳️ تصويت جديد
+      </button>
+    </div>
+  
+            <div style="border-top:1px solid #e8edf2;margin:8px 0;"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div onclick="closeMod('mod-assembly-vote');nav('history')" style="background:linear-gradient(135deg,#1a2e44,#2563a8);border-radius:14px;padding:16px;cursor:pointer;">
+                    <div style="text-align:center;">
+                        <div style="font-size:26px;margin-bottom:6px;">🤝</div>
+                        <div style="font-size:12px;font-weight:800;color:#fff;font-family:Cairo,sans-serif;">سجل الاجتماعات</div>
+                    </div>
+                </div>
+                <div onclick="closeMod('mod-assembly-vote');nav('history')" style="background:linear-gradient(135deg,#5b2d8e,#7c3aed);border-radius:14px;padding:16px;cursor:pointer;">
+                    <div style="text-align:center;">
+                        <div style="font-size:26px;margin-bottom:6px;">🗳️</div>
+                        <div style="font-size:12px;font-weight:800;color:#fff;font-family:Cairo,sans-serif;">سجل التصويت</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL اجتماع -->
+<div class="ov" id="mod-assembly">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-assembly')">✕</button>
+    <h3>🤝 إنشاء اجتماع</h3>
+    <div class="tabs" style="margin-bottom:12px">
+      <button class="tab on" onclick="switchAssemblyTab('info',this)">📋 معلومات</button>
+      <button class="tab" onclick="switchAssemblyTab('agenda',this)">📌 جدول الأعمال</button>
+
+    </div>
+
+    <!-- تبويب المعلومات -->
+    <div id="assembly-tab-info">
+      <div class="fg"><label>عنوان الاجتماع *</label>
+        <input id="asm-title" placeholder="مثال: الجمع العام السنوي 2025">
+      </div>
+      <div class="row2">
+        <div class="fg"><label>التاريخ *</label>
+          <input id="asm-date" type="date">
+        </div>
+        <div class="fg"><label>الوقت *</label>
+          <input id="asm-time" type="time">
+        </div>
+      </div>
+      <div class="fg"><label>المكان *</label>
+        <input id="asm-location" placeholder="مثال: قاعة الاجتماعات — الطابق الأرضي">
+      </div>
+      <div class="fg"><label>النوع</label>
+        <select id="asm-type">
+          <option value="ordinary">عادي</option>
+          <option value="extraordinary">استثنائي</option>
+          <option value="annual">سنوي</option>
+        </select>
+      </div>
+      <div class="fg"><label>نطاق الإرسال</label>
+      <select id="asm-scope" onchange="toggleAsmResSelect(this.value)">
+        <option value="current">إقامة محددة</option>
+        <option value="all_res">كل إقاماتي</option>
+      </select>
+    </div>
+    <div class="fg" id="asm-res-div">
+      <label>اختر الإقامة *</label>
+      <select id="asm-res-sel" style="width:100%">
+        <option value="">-- اختر إقامة --</option>
+      </select>
+    </div>
+      <button class="btn btn-full" style="background:#0f766e;color:#fff" onclick="switchAssemblyTab('agenda',null)">التالي — جدول الأعمال ←</button>
+    </div>
+
+    <!-- تبويب جدول الأعمال -->
+    <div id="assembly-tab-agenda" style="display:none">
+      <div class="alert alert-info" style="font-size:11px">اختر من البنود المقترحة أو أضف بنداً خاصاً</div>
+      <div id="agenda-suggested" style="margin-bottom:10px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px">📌 بنود مقترحة:</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <span onclick="addAgendaItem(this)" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">انتخاب مجلس الإدارة</span>
+          <span onclick="addAgendaItem(this)" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">المصادقة على الميزانية</span>
+          <span onclick="addAgendaItem(this)" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">تحديد الواجب الشهري</span>
+          <span onclick="addAgendaItem(this)" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">صيانة المبنى</span>
+          <span onclick="addAgendaItem(this)" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">تقرير السانديك</span>
+          <span onclick="addAgendaItem(this)" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">متفرقات</span>
+        </div>
+      </div>
+      <div id="agenda-items-list" style="margin-bottom:10px"></div>
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <input id="agenda-custom" placeholder="بند خاص..." style="flex:1;padding:8px;border:1px solid var(--brd);border-radius:8px;font-family:Cairo,sans-serif;font-size:12px">
+        <button class="btn btn-p btn-sm" onclick="addCustomAgendaItem()">+ إضافة</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button class="btn btn-ghost" onclick="switchAssemblyTab('info',null)">← رجوع</button>
+        <button class="btn btn-full" style="background:#0f766e;color:#fff" onclick="submitMeeting()">✅ حفظ الاجتماع</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL تصويت -->
+<div class="ov" id="mod-vote">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-vote')">✕</button>
+    <h3>🗳️ إنشاء تصويت</h3>
+    <div class="fg"><label>موضوع التصويت *</label>
+      <input id="vote-title" placeholder="مثال: الموافقة على رفع الواجب الشهري">
+    </div>
+    <div class="fg"><label>التفاصيل</label>
+      <textarea id="vote-desc" rows="3" placeholder="اشرح الاقتراح بالتفصيل..."></textarea>
+    </div>
+    <div class="fg"><label>نوع الخيارات</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <button type="button" id="vote-type-yesno" onclick="setVoteType('yesno')" style="background:#d1fae5;border:2px solid #059669;border-radius:8px;padding:10px;font-weight:700;cursor:pointer">✅ نعم / ❌ لا</button>
+        <button type="button" id="vote-type-custom" onclick="setVoteType('custom')" style="background:#fff;border:2px solid #e2e8f0;border-radius:8px;padding:10px;font-weight:700;cursor:pointer">✏️ خيارات مخصصة</button>
+      </div>
+      <div id="vote-custom-options" style="display:none">
+        <div id="vote-options-list">
+          <div style="display:flex;gap:6px;margin-bottom:6px"><input class="vote-opt-inp" placeholder="الخيار 1" style="flex:1;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-family:Cairo,sans-serif"><button type="button" onclick="this.parentElement.remove()" style="background:#fee2e2;border:none;border-radius:8px;padding:6px 10px;cursor:pointer">🗑️</button></div>
+          <div style="display:flex;gap:6px;margin-bottom:6px"><input class="vote-opt-inp" placeholder="الخيار 2" style="flex:1;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-family:Cairo,sans-serif"><button type="button" onclick="this.parentElement.remove()" style="background:#fee2e2;border:none;border-radius:8px;padding:6px 10px;cursor:pointer">🗑️</button></div>
+        </div>
+        <button type="button" onclick="addVoteOption()" style="width:100%;padding:8px;background:#f1f5f9;border:1px dashed #94a3b8;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif">+ إضافة خيار</button>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>تاريخ البداية</label>
+        <input id="vote-start" type="date">
+      </div>
+      <div class="fg"><label>تاريخ الانتهاء *</label>
+        <input id="vote-end" type="date">
+      </div>
+    </div>
+    <div class="fg"><label>المستهدفون</label>
+      <select id="vote-target">
+        <option value="all">جميع سكان الإقامة</option>
+        <option value="owners">الملاك فقط</option>
+      </select>
+    </div>
+    <div class="fg"><label>نطاق الإرسال</label>
+      <select id="vote-scope">
+        <option value="current">الإقامة الحالية فقط</option>
+        <option value="all_res">كل إقاماتي</option>
+      </select>
+    </div>
+    <button class="btn btn-full" style="background:#7c3aed;color:#fff" onclick="submitVote()">🗳️ إرسال التصويت للسكان</button>
+  </div>
+</div>
+
+<!-- MODAL اجتماع وتصويت -->
+<div class="ov" id="mod-assembly-vote">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-assembly-vote')">✕</button>
+    <h3>🏛️ اجتماع وتصويت</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px">
+      <button class="btn btn-full" style="background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;padding:16px;border-radius:14px;font-size:14px;font-weight:700" onclick="closeMod('mod-assembly-vote');openAssemblyModal()">
+        🤝 اجتماع جديد
+      </button>
+      <button class="btn btn-full" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff;padding:16px;border-radius:14px;font-size:14px;font-weight:700" onclick="closeMod('mod-assembly-vote');openMod('mod-vote')">
+        🗳️ تصويت جديد
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL اجتماع -->
+<div class="ov" id="mod-assembly">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-assembly')">✕</button>
+    <h3>🤝 إنشاء اجتماع</h3>
+    <div class="tabs" style="margin-bottom:12px">
+      <button class="tab on" onclick="switchAssemblyTab('info',this)">📋 معلومات</button>
+      <button class="tab" onclick="switchAssemblyTab('agenda',this)">📌 جدول الأعمال</button>
+
+    </div>
+
+    <!-- تبويب المعلومات -->
+    <div id="assembly-tab-info">
+      <div class="fg"><label>عنوان الاجتماع *</label>
+        <input id="asm-title" placeholder="مثال: الجمع العام السنوي 2025">
+      </div>
+      <div class="row2">
+        <div class="fg"><label>التاريخ *</label>
+          <input id="asm-date" type="date">
+        </div>
+        <div class="fg"><label>الوقت *</label>
+          <input id="asm-time" type="time">
+        </div>
+      </div>
+      <div class="fg"><label>المكان *</label>
+        <input id="asm-location" placeholder="مثال: قاعة الاجتماعات — الطابق الأرضي">
+      </div>
+      <div class="fg"><label>النوع</label>
+        <select id="asm-type">
+          <option value="ordinary">عادي</option>
+          <option value="extraordinary">استثنائي</option>
+          <option value="annual">سنوي</option>
+        </select>
+      </div>
+      <div class="fg"><label>نطاق الإرسال</label>
+        <select id="asm-scope">
+          <option value="current">الإقامة الحالية فقط</option>
+          <option value="all_res">كل إقاماتي</option>
+        </select>
+      </div>
+      <button class="btn btn-full" style="background:#0f766e;color:#fff" onclick="switchAssemblyTab('agenda',null)">التالي — جدول الأعمال ←</button>
+    </div>
+
+    <!-- تبويب جدول الأعمال -->
+    <div id="assembly-tab-agenda" style="display:none">
+      <div class="alert alert-info" style="font-size:11px">اختر من البنود المقترحة أو أضف بنداً خاصاً</div>
+      <div id="agenda-suggested" style="margin-bottom:10px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px">📌 بنود مقترحة:</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <span onclick="addAgendaItem(this)" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">انتخاب مجلس الإدارة</span>
+          <span onclick="addAgendaItem(this)" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">المصادقة على الميزانية</span>
+          <span onclick="addAgendaItem(this)" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">تحديد الواجب الشهري</span>
+          <span onclick="addAgendaItem(this)" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">صيانة المبنى</span>
+          <span onclick="addAgendaItem(this)" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">تقرير السانديك</span>
+          <span onclick="addAgendaItem(this)" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:4px 10px;font-size:11px;cursor:pointer">متفرقات</span>
+        </div>
+      </div>
+      <div id="agenda-items-list" style="margin-bottom:10px"></div>
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <input id="agenda-custom" placeholder="بند خاص..." style="flex:1;padding:8px;border:1px solid var(--brd);border-radius:8px;font-family:Cairo,sans-serif;font-size:12px">
+        <button class="btn btn-p btn-sm" onclick="addCustomAgendaItem()">+ إضافة</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button class="btn btn-ghost" onclick="switchAssemblyTab('info',null)">← رجوع</button>
+        <button class="btn btn-full" style="background:#0f766e;color:#fff" onclick="submitMeeting()">✅ حفظ الاجتماع</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL تصويت -->
+<div class="ov" id="mod-vote">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-vote')">✕</button>
+    <h3>🗳️ إنشاء تصويت</h3>
+    <div class="fg"><label>موضوع التصويت *</label>
+      <input id="vote-title" placeholder="مثال: الموافقة على رفع الواجب الشهري">
+    </div>
+    <div class="fg"><label>التفاصيل</label>
+      <textarea id="vote-desc" rows="3" placeholder="اشرح الاقتراح بالتفصيل..."></textarea>
+    </div>
+    <div class="fg"><label>نوع الخيارات</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <button type="button" id="vote-type-yesno" onclick="setVoteType('yesno')" style="background:#d1fae5;border:2px solid #059669;border-radius:8px;padding:10px;font-weight:700;cursor:pointer">✅ نعم / ❌ لا</button>
+        <button type="button" id="vote-type-custom" onclick="setVoteType('custom')" style="background:#fff;border:2px solid #e2e8f0;border-radius:8px;padding:10px;font-weight:700;cursor:pointer">✏️ خيارات مخصصة</button>
+      </div>
+      <div id="vote-custom-options" style="display:none">
+        <div id="vote-options-list">
+          <div style="display:flex;gap:6px;margin-bottom:6px"><input class="vote-opt-inp" placeholder="الخيار 1" style="flex:1;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-family:Cairo,sans-serif"><button type="button" onclick="this.parentElement.remove()" style="background:#fee2e2;border:none;border-radius:8px;padding:6px 10px;cursor:pointer">🗑️</button></div>
+          <div style="display:flex;gap:6px;margin-bottom:6px"><input class="vote-opt-inp" placeholder="الخيار 2" style="flex:1;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-family:Cairo,sans-serif"><button type="button" onclick="this.parentElement.remove()" style="background:#fee2e2;border:none;border-radius:8px;padding:6px 10px;cursor:pointer">🗑️</button></div>
+        </div>
+        <button type="button" onclick="addVoteOption()" style="width:100%;padding:8px;background:#f1f5f9;border:1px dashed #94a3b8;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif">+ إضافة خيار</button>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="fg"><label>تاريخ البداية</label>
+        <input id="vote-start" type="date">
+      </div>
+      <div class="fg"><label>تاريخ الانتهاء *</label>
+        <input id="vote-end" type="date">
+      </div>
+    </div>
+    <div class="fg"><label>المستهدفون</label>
+      <select id="vote-target">
+        <option value="all">جميع سكان الإقامة</option>
+        <option value="owners">الملاك فقط</option>
+      </select>
+    </div>
+    <div class="fg"><label>نطاق الإرسال</label>
+      <select id="vote-scope">
+        <option value="current">الإقامة الحالية فقط</option>
+        <option value="all_res">كل إقاماتي</option>
+      </select>
+    </div>
+    <button class="btn btn-full" style="background:#7c3aed;color:#fff" onclick="submitVote()">🗳️ إرسال التصويت للسكان</button>
+  </div>
+</div>
+
+<div class="ov" id="mod-syndic-forgot-username">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-syndic-forgot-username')">X</button>
+    <h3>استرداد اسم المستخدم</h3>
+    <div class="fg">
+      <label>البريد الالكتروني او الهاتف</label>
+      <input id="sfu-val" class="finput" type="text" placeholder="البريد او الهاتف" dir="rtl">
+    </div>
+    <div id="sfu-msg" style="color:green;text-align:center;margin:8px 0;display:none"></div>
+    <button class="btn btn-p btn-full" onclick="submitSyndicForgotUsername()">ارسال</button>
+  </div>
+</div>
+
+<!-- modal استرداد اسم المستخدم - الساكن -->
+
+
+
+<div class="ov" id="mod-resident-forgot-username">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-resident-forgot-username')">X</button>
+    <h3>استرداد اسم المستخدم — ساكن</h3>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px">ادخل رقم CIN او الهاتف المسجل</p>
+    <div class="fg">
+      <input id="rfu-cin" class="finput" type="text" placeholder="رقم CIN" dir="rtl">
+    </div>
+    <div class="fg">
+      <input id="rfu-phone" class="finput" type="text" placeholder="رقم الهاتف" dir="rtl">
+    </div>
+    <div id="rfu-msg" style="display:none;color:green;text-align:center;margin:8px 0"></div>
+    <button class="btn btn-res btn-full" onclick="submitResidentForgotUsername()">ارسال</button>
+  </div>
+</div>
+
+
+<div id="mod-terms" class="ov">
+<div class="msh" style="max-width:500px;padding:24px 20px 20px">
+<button class="mclose" onclick="closeMod('mod-terms')">X</button>
+<h3 style="text-align:center;margin-bottom:16px">📋 شروط الاستخدام وسياسة الخصوصية</h3>
+<div style="height:340px;overflow-y:auto;font-size:12px;line-height:1.8;color:var(--txt);text-align:right;padding-left:8px">
+<b>1. القبول الإلزامي</b><br>باستخدامك لمنصة SyndikPro، فإنك تقر بقراءة هذه الشروط وقبولها قبولاً تاماً وغير مشروط. يُعدّ هذا القبول ملزماً قانونياً وفق أحكام القانون المغربي رقم 53-05 المتعلق بالتبادل الإلكتروني للمعطيات القانونية.
+<br><br><b>2. حماية المعطيات الشخصية</b><br>تلتزم المنصة بأحكام القانون رقم 09-08 المتعلق بحماية الأشخاص الذاتيين تجاه معالجة المعطيات ذات الطابع الشخصي. تُعالَج بياناتك لأغراض تقديم الخدمة حصراً، ولا تُباع أو تُشارَك مع أطراف ثالثة دون موافقتك الصريحة.
+<br><br><b>3. صلاحيات الإدارة</b><br>تضطلع إدارة SyndikPro بالإشراف التقني دون الاطلاع على البيانات الشخصية إلا في حالات: (أ) صدور أمر قضائي، (ب) التحقيق في مخالفة صريحة، (ج) حماية أمن المنصة.
+<br><br><b>4. علاقة السانديك بالقاطن</b><br>يقتصر اطلاع السانديك على بيانات القاطنين المرتبطين مباشرة بالعقارات التي يديرها فقط. يتحمل السانديك المسؤولية الكاملة عن التعامل السليم مع هذه البيانات وفق القانون 09-08.
+<br><br><b>5. أمن الحساب</b><br>أنت مسؤول مسؤولية كاملة عن سرية بيانات تسجيل دخولك. يُحظر مشاركة كلمة المرور مع أي طرف. تتحمل المسؤولية عن جميع الأنشطة التي تجري باستخدام حسابك.
+<br><br><b>6. الاستخدام المقبول</b><br>تلتزم بعدم استخدام المنصة لأغراض غير مشروعة أو مخالفة للتشريعات المغربية، ولا سيما القانون الجنائي والقانون رقم 07-03 المتعلق بالجرائم المعلوماتية.
+<br><br><b>7. تعليق الحساب</b><br>تحتفظ الإدارة بالحق في تعليق أو إنهاء أي حساب يخالف هذه الشروط دون إشعار مسبق في حالات المخالفة الجسيمة. لا يُرتّب إنهاء الحساب أي حق في استرداد الرسوم.
+<br><br><b>8. المسؤولية</b><br>لا تتحمل SyndikPro المسؤولية عن أضرار ناجمة عن سوء الاستخدام أو انقطاع الخدمة لأسباب خارجة عن إرادتها.
+<br><br><b>9. التعديلات</b><br>تحتفظ الإدارة بحق تعديل هذه الشروط. يُعدّ استمرارك في الاستخدام قبولاً ضمنياً للتعديلات.
+<br><br><b>10. القانون المطبق</b><br>تخضع هذه الشروط للقانون المغربي. تختص المحاكم المغربية حصراً بالنظر في أي نزاع.
+<br><br><i style="font-size:11px;opacity:.7">آخر تحديث: يونيو 2026 — SyndikPro © جميع الحقوق محفوظة</i>
+</div>
+<div style="margin-top:16px;text-align:center">
+<button class="btn btn-p btn-full" onclick="acceptTerms()">✅ قرأت وأوافق على الشروط</button>
+</div>
+</div>
+</div>
+<script src="/static/payment_ui.js"></script>
+
+
+<!-- modal رد السانديك على الشكاية -->
+<div class="ov" id="mod-comp-reply">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-comp-reply')">✕</button>
+    <h3>💬 الرد على الشكاية</h3>
+    <div style="background:#eff6ff;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;font-weight:700;color:#1e40af">
+      📋 <span id="comp-reply-title"></span>
+    </div>
+    <div class="fg">
+      <label>تغيير الحالة</label>
+      <select id="comp-reply-status">
+        <option value="progress">⚙️ قيد المعالجة</option>
+        <option value="closed">✅ مغلقة — تمت المعالجة</option>
+        <option value="open">🔴 مفتوحة</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>رسالة للقاطن (اختياري)</label>
+      <textarea id="comp-reply-note" rows="3" 
+        placeholder="مثال: سيتم إصلاح المشكلة غداً..."></textarea>
+    </div>
+    <button class="btn btn-p btn-full" onclick="submitCompReply()">
+      📨 حفظ وإشعار القاطن
+    </button>
+  </div>
+</div>
+
+<div class="ov" id="mod-addexp">
+  <div class="msh">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3>➕ إضافة مصروف جديد</h3>
+      <button class="mclose" onclick="closeMod('mod-addexp')">✕</button>
+    </div>
+    
+    <div class="fg">
+      <label>📝 عنوان المصروف</label>
+      <input id="exp-title" type="text" placeholder="مثال: صيانة مصعد">
+    </div>
+    
+    <div class="fg">
+      <label>💰 المبلغ (درهم)</label>
+      <input id="exp-amount" type="number" placeholder="0.00" step="0.01">
+    </div>
+    
+    <div class="fg">
+      <label>📅 التاريخ</label>
+      <input id="exp-date" type="date">
+    </div>
+    
+    <div class="fg">
+      <label>📂 الفئة</label>
+      <select id="exp-cat">
+        <option value="صيانة">🔧 صيانة</option>
+        <option value="فواتير">🧾 فواتير</option>
+        <option value="خدمات">🧰 خدمات</option>
+        <option value="رواتب العمال">👷 رواتب العمال</option>
+        <option value="أخرى">📦 أخرى</option>
+      </select>
+    </div>
+    
+    <div class="fg">
+      <label>📌 ملاحظات (اختياري)</label>
+      <textarea id="exp-note" placeholder="أضف ملاحظة..." style="resize:vertical;min-height:60px"></textarea>
+    </div>
+    
+    <button class="btn btn-p btn-full" onclick="addExpense()">✅ حفظ المصروف</button>
+  </div>
+</div>
+
+
+
+<!-- مودال إضافة عامل جديد - محسّن -->
+<div class="ov" id="mod-addwrk">
+  <div class="msh">
+    <button class="mclose" onclick="closeMod('mod-addwrk')">✕</button>
+    <h3>👷 إضافة عامل جديد</h3>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <!-- الاسم الكامل -->
+      <div class="fg" style="grid-column:1/-1">
+        <label>الاسم الكامل *</label>
+        <input id="wrk-name" type="text" placeholder="أحمد محمد" required>
+      </div>
+      
+      <!-- المنصب -->
+      <div class="fg">
+        <label>المنصب *</label>
+        <select id="wrk-role" required>
+          <option value="">اختر المنصب</option>
+          <option value="حارس">حارس 🔐</option>
+          <option value="بستاني">بستاني 🌳</option>
+          <option value="عامل نظافة">عامل نظافة 🧹</option>
+          <option value="سباك">سباك 🔧</option>
+          <option value="تقني">تقني ⚙️</option>
+        </select>
+      </div>
+      
+      <!-- الهاتف -->
+      <div class="fg">
+        <label>الهاتف</label>
+        <input id="wrk-phone" type="tel" placeholder="06 12 34 56 78">
+      </div>
+      
+      <!-- رقم البطاقة -->
+      <div class="fg">
+        <label>رقم البطاقة (CIN)</label>
+        <input id="wrk-cin" type="text" placeholder="AB123456">
+      </div>
+      
+      <!-- رقم CNSS -->
+      <div class="fg">
+        <label>رقم CNSS</label>
+        <input id="wrk-cnss-number" type="text" placeholder="1234567890">
+      </div>
+      
+      <!-- حالة CNSS -->
+      <div class="fg">
+        <label>حالة CNSS</label>
+        <select id="wrk-cnss-status">
+          <option value="مسجل">مسجل ✅</option>
+          <option value="غير مسجل">غير مسجل ❌</option>
+          <option value="في الانتظار">في الانتظار ⏳</option>
+        </select>
+      </div>
+      
+      <!-- الراتب الشهري -->
+      <div class="fg">
+        <label>الراتب الشهري (درهم)</label>
+        <input id="wrk-salary" type="number" placeholder="3000" min="0" step="100">
+      </div>
+      
+      <!-- تاريخ البداية -->
+      <div class="fg">
+        <label>تاريخ البداية</label>
+        <input id="wrk-start" type="date">
+      </div>
+      
+      <!-- الحالة -->
+      <div class="fg" style="grid-column:1/-1">
+        <label>الحالة</label>
+        <select id="wrk-status">
+          <option value="active">نشط ✅</option>
+          <option value="inactive">موقوف ⏸</option>
+        </select>
+      </div>
+      
+      <!-- ملاحظات -->
+      <div class="fg" style="grid-column:1/-1">
+        <label>ملاحظات</label>
+        <textarea id="wrk-notes" placeholder="ملاحظات إضافية..." style="min-height:80px"></textarea>
+      </div>
+    </div>
+    
+    <button class="btn btn-p btn-full" onclick="addWorker()" style="margin-top:16px">✅ إضافة العامل</button>
+  </div>
+</div>

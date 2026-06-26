@@ -1,0 +1,980 @@
+<div id="login-err" style="color:var(--err);font-size:12px;text-align:center;margin-top:10px"></div>
+</div>
+
+<!-- SYNDIC APP -->
+<!-- شريط الإشعارات -->
+<div id="notif-strip" style="position:fixed;top:0;left:0;right:0;height:60px;background:linear-gradient(90deg,#1e40af,#3b82f6);color:#fff;padding:0;z-index:1000;display:none;overflow-x:auto;overflow-y:hidden;scroll-behavior:smooth;white-space:nowrap;align-items:center;">
+  <div id="notif-strip-content" style="display:flex;gap:0;height:100%;align-items:center"></div>
+</div>
+<style>
+  #notif-strip-item {
+    flex-shrink:0;width:100%;height:100%;padding:0 20px;display:flex;align-items:center;gap:12px;background:linear-gradient(90deg,#1e40af,#3b82f6);cursor:pointer;transition:all 0.3s;border-right:1px solid rgba(255,255,255,0.1);white-space:normal;line-height:1.3;min-height:60px;
+  }
+  #notif-strip-item:hover { background:linear-gradient(90deg,#1e3a8a,#2563eb); }
+  #notif-strip-item-title { font-weight:700;font-size:13px; }
+  #notif-strip-item-body { font-size:12px;opacity:0.9; }
+</style>
+<div id="app" style="display:none">
+
+<div class="shell">
+  <div class="topbar" id="top-bar">
+    <div class="tlogo">
+      <div class="ticon">S</div>
+      <div>
+        <div class="tname">SyndikPro</div>
+        <div class="tsub" id="top-res">اختر إقامة</div>
+      </div>
+    </div>
+    <div class="tbtns">
+      <span class="tbadge" id="top-plan">free</span>
+      <button class="tbtn" onclick="nav('notifications')" style="position:relative">🔔<span id="syndic-notif-dot" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;background:var(--err);border-radius:50%"></span></button>
+      <button class="tbtn" onclick="changeLang()">FR</button>
+      <button class="tbtn" id="pwa-btn" onclick="installPWA()" style="display:none">📲 تحميل</button><button class="tbtn" onclick="doLogout()">خروج</button>
+    </div>
+  </div>
+  <nav class="bnav" id="main-nav">
+    <button class="ni on" onclick="nav('home')"><div class="ni-ico">🏠</div><div class="ni-lbl">الرئيسية</div></button>
+    
+    <button class="ni" onclick="nav('payments')"><div class="ni-ico">💰</div><div class="ni-lbl">المدفوعات</div></button>
+    
+    <button class="ni" onclick="nav('expenses')"><div class="ni-ico">💸</div><div class="ni-lbl">المصاريف</div></button>
+    <button class="ni" onclick="nav('complaints')" style="position:relative"><div class="ni-ico">📋</div><div class="ni-lbl">شكايات</div><span id="comp-nav-badge2" style="display:none;position:absolute;top:2px;right:2px;min-width:16px;height:16px;background:#ef4444;border-radius:50%;font-size:9px;font-weight:700;color:#fff;align-items:center;justify-content:center;border:2px solid #fff"></span></button>
+    
+    
+    
+    <button class="ni" onclick="nav('support')" style="position:relative"><div class="ni-ico">📩</div><div class="ni-lbl">الدعم</div><span id="support-nav-badge" style="display:none;position:absolute;top:2px;right:2px;min-width:16px;height:16px;background:#ef4444;border-radius:50%;font-size:9px;font-weight:700;color:#fff;align-items:center;justify-content:center;border:2px solid #fff"></span></button>
+      <button class="ni" onclick="nav('account')"><div class="ni-ico">👤</div><div class="ni-lbl">حسابي</div></button>
+  </nav>
+
+  <!-- NOTIFICATIONS -->
+  <div class="scr" id="scr-history">
+<div class="wcard" style="background:transparent;box-shadow:none;padding:0;">
+
+  <!-- رأس القسم -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding:0 4px;">
+    <div>
+      <div style="font-size:11px;font-weight:700;color:#7c9ab5;letter-spacing:2px;font-family:Cairo,sans-serif;margin-bottom:4px;">SYNDIKPRO</div>
+      <h2 style="font-size:22px;font-weight:900;color:#1a2e44;font-family:Cairo,sans-serif;margin:0;">📋 السجل</h2>
+    </div>
+    <div style="width:44px;height:44px;background:linear-gradient(135deg,#217346,#1a5c38);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 12px rgba(33,115,70,.25);">📋</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+        <button class="btn btn-full" onclick="closeMod('mod-assembly-vote');openAssemblyModal()" style="background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;padding:16px;border-radius:14px;font-size:14px;font-weight:700">
+            🤝 اجتماع جديد
+        </button>
+        <button class="btn btn-full" onclick="closeMod('mod-assembly-vote');openMod('mod-vote')" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff;padding:16px;border-radius:14px;font-size:14px;font-weight:700">
+            🔵 تصويت جديد
+        </button>
+    </div>
+    <!-- بطاقة سجل الاجتماعات -->
+  <div onclick="showHistSection('assemblies')"
+       style="background:linear-gradient(135deg,#1a2e44,#2563a8);border-radius:18px;padding:20px;margin-bottom:14px;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 6px 20px rgba(37,99,168,.3);">
+    <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:rgba(255,255,255,.06);border-radius:50%;"></div>
+    <div style="position:absolute;right:30px;bottom:-30px;width:80px;height:80px;background:rgba(255,255,255,.04);border-radius:50%;"></div>
+    <div style="display:flex;align-items:center;gap:14px;position:relative;">
+      <div style="width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">🤝</div>
+      <div style="flex:1;">
+        <div style="font-size:17px;font-weight:800;color:#fff;font-family:Cairo,sans-serif;margin-bottom:3px;">سجل الاجتماعات</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.7);font-family:Cairo,sans-serif;">اطّلع على محاضر وقرارات الجمعيات العامة</div>
+      </div>
+      <div style="color:rgba(255,255,255,.5);font-size:18px;">‹</div>
+    </div>
+  </div>
+
+  <!-- بطاقة سجل التصويت -->
+  <div onclick="showHistSection('votes')"
+       style="background:linear-gradient(135deg,#5b2d8e,#7c3aed);border-radius:18px;padding:20px;margin-bottom:14px;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 6px 20px rgba(124,58,237,.3);">
+    <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;background:rgba(255,255,255,.06);border-radius:50%;"></div>
+    <div style="position:absolute;right:30px;bottom:-30px;width:80px;height:80px;background:rgba(255,255,255,.04);border-radius:50%;"></div>
+    <div style="display:flex;align-items:center;gap:14px;position:relative;">
+      <div style="width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;">🗳️</div>
+      <div style="flex:1;">
+        <div style="font-size:17px;font-weight:800;color:#fff;font-family:Cairo,sans-serif;margin-bottom:3px;">سجل التصويت</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.7);font-family:Cairo,sans-serif;">شارك في التصويتات النشطة وتابع نتائجها</div>
+      </div>
+      <div style="color:rgba(255,255,255,.5);font-size:18px;">‹</div>
+    </div>
+  </div>
+
+  <!-- أرشيف الاجتماعات والتصويت -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;">
+    <div style="background:#f0f6ff;border-radius:14px;padding:14px;text-align:center;">
+      <div style="font-size:22px;font-weight:900;color:#2563a8;font-family:Cairo,sans-serif;" id="reg-meetings-count">—</div>
+      <div style="font-size:11px;color:#64748b;font-family:Cairo,sans-serif;margin-top:2px;">اجتماع مسجّل</div>
+    </div>
+    <div style="background:#f5f0ff;border-radius:14px;padding:14px;text-align:center;">
+      <div style="font-size:22px;font-weight:900;color:#7c3aed;font-family:Cairo,sans-serif;" id="reg-votes-count">—</div>
+      <div style="font-size:11px;color:#64748b;font-family:Cairo,sans-serif;margin-top:2px;">تصويت نشط</div>
+    </div>
+  </div>
+
+  <div id="hist-section" style="margin-top:12px"></div>
+
+</div>
+</div>
+
+<div class="scr" id="scr-notifications">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-weight:700;font-size:15px">🔔 الإشعارات</span>
+      <button class="btn btn-ghost btn-sm" onclick="markAllSyndicNotifs()">قراءة الكل ✓</button>
+    </div>
+    <div id="syndic-notifs-list"><div class="empty"><div class="empty-ico">🔔</div><p>لا توجد إشعارات</p></div></div>
+  </div>
+
+  <!-- HOME -->
+  <div class="scr" id="scr-home">
+    <div id="announce-card" style="display:none;margin-bottom:12px">
+      <div id="announce-list"></div>
+    </div>
+    <div class="wcard" id="welcome-card" style="padding:10px 14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <div>
+          <h2 id="welcome-name" style="font-size:13px;font-weight:800;margin:0">👋 مرحباً</h2>
+          <p id="welcome-role" style="font-size:11px;opacity:.8;margin:2px 0 0">Syndic</p>
+          <div id="welcome-location" style="font-size:10px;opacity:.7;margin-top:2px"></div>
+        </div>
+        <div class="wdate" id="welcome-date" style="font-size:10px;opacity:.7;text-align:left"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+      <div style="flex:1;background:linear-gradient(135deg,var(--p),var(--p2));border-radius:12px;padding:10px 16px;display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600;white-space:nowrap">🏢 الإقامة</span>
+        <select id="res-select" onchange="selectRes()" style="flex:1;background:transparent;border:none;outline:none;font-family:Cairo,sans-serif;font-size:17px;font-weight:900;color:#fff;cursor:pointer">
+          <option value="" style="color:#000">— اختر —</option>
+        </select>
+      </div>
+      <button class="btn btn-p btn-sm" onclick="if(checkCanAddResidence())openMod('mod-addres')" title="إضافة إقامة" style="flex-shrink:0;padding:10px 14px;font-size:16px;background:var(--p2)">+</button>
+    </div>
+    <div id="res-info-bar" style="display:none;background:#1e40af;color:#fff;border-radius:10px;padding:8px 14px;margin-bottom:10px;flex-direction:row;gap:0;align-items:center;justify-content:space-around">
+      <div onclick="openManageBuildings()" style="text-align:center;padding:0 10px;border-left:1px solid rgba(255,255,255,.3);cursor:pointer;flex:1">
+        <span style="font-size:16px;font-weight:900" id="res-info-buildings">—</span>
+        <span style="font-size:11px;opacity:.8;margin-right:4px">🏗️ عمارة</span>
+        <span style="font-size:10px;background:rgba(255,255,255,.25);border-radius:20px;padding:1px 7px;margin-right:4px">+ إدارة</span>
+      </div>
+      <div style="text-align:center;padding:0 10px;flex:1">
+        <span style="font-size:16px;font-weight:900" id="res-info-apts">—</span>
+        <span style="font-size:11px;opacity:.8;margin-right:4px">🏠 شقة</span>
+      </div>
+    </div>
+    <div class="sgrid" id="home-stats" style="gap:6px;margin-bottom:8px">
+      <div class="scard blue" style="cursor:pointer;padding:8px" onclick="nav('apts')"><div class="sval" style="font-size:20px" id="hs-apts">—</div><div class="slbl">الشقق</div></div>
+      <div class="scard green" style="cursor:pointer;padding:8px" onclick="showPaidList()"><div class="sval" style="font-size:20px" id="hs-paid">—</div><div class="slbl">دفعوا</div></div>
+      <div class="scard red" style="cursor:pointer;padding:8px" onclick="showLateList()"><div class="sval" style="font-size:20px" id="hs-late">—</div><div class="slbl">لم يدفعوا</div></div>
+      <div class="scard orange" style="cursor:pointer;padding:8px" onclick="nav('complaints')"><div class="sval" style="font-size:20px" id="hs-comp">—</div><div class="slbl">شكايات</div></div>
+    </div>
+
+    <!-- modal دفعوا -->
+    <div class="ov" id="mod-paid-list">
+      <div class="msh">
+        <button class="mclose" onclick="closeMod('mod-paid-list')">✕</button>
+        <h3>✅ الشقق المدفوعة هذا الشهر</h3>
+        <div id="paid-list-content"></div>
+      </div>
+    </div>
+
+    <!-- modal متأخرون -->
+    <div class="ov" id="mod-late-list">
+      <div class="msh">
+        <button class="mclose" onclick="closeMod('mod-late-list')">✕</button>
+        <h3>⚠️ الشقق التي لم تدفع هذا الشهر</h3>
+        <div id="late-list-content"></div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:10px 12px;margin-bottom:8px">
+      <div class="card-title" style="margin-bottom:8px;font-size:13px">⚡ إجراءات سريعة</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;grid-auto-rows:auto">
+        <button onclick="nav('apts')" style="background:linear-gradient(135deg,#1565c0,#0d47a1);border:none;border-radius:14px;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 12px rgba(13,71,161,.3)">
+          <span style=\"font-size:20px\">🏠</span>
+          <span style="font-size:11px;color:#fff;font-weight:800;font-family:Cairo,sans-serif">&#1575;&#1604;&#1588;&#1602;&#1602;</span>
+        </button>
+        <button onclick="openMod('mod-announce')" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);border:none;border-radius:14px;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 3px 8px rgba(124,58,237,.3)">
+          <span style="font-size:20px">📢</span>
+          <span style="font-size:11px;color:#fff;font-weight:800;font-family:Cairo,sans-serif">إعلان</span>
+        </button>
+
+        <button onclick="nav('history')" style="background:linear-gradient(135deg,#0f766e,#14b8a6);border:none;border-radius:14px;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 12px rgba(15,118,110,.3)">
+          <span style="font-size:20px">🏢</span>
+          <span style="font-size:11px;color:#fff;font-weight:800;font-family:Cairo,sans-serif">اجتماع وتصويت</span>
+        </button>
+        <button onclick="nav('residents')" style="background:linear-gradient(135deg,#059669,#34d399);border:none;border-radius:14px;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 12px rgba(5,150,105,.3)">
+          <span style="font-size:20px">👥</span>
+          <span style="font-size:11px;color:#fff;font-weight:800;font-family:Cairo,sans-serif">السكان</span>
+        </button>
+        <button onclick="nav('workers')" style="background:linear-gradient(135deg,#0891b2,#67e8f9);border:none;border-radius:14px;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 12px rgba(8,145,178,.3)">
+          <span style="font-size:20px">👷</span>
+          <span style="font-size:11px;color:#fff;font-weight:800;font-family:Cairo,sans-serif">العمال</span>
+        </button>
+        <button onclick="openMod('mod-excel');populateExcelResidenceSelect()" style="background:linear-gradient(135deg,#217346,#1a5c38);border:none;border-radius:14px;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 12px rgba(33,115,70,.3)">
+          <span style="font-size:20px">🔄</span>
+          <span style="font-size:11px;color:#fff;font-weight:800;font-family:Cairo,sans-serif">استيراد وتصدير</span>
+        </button>
+        <input type="file" id="import-excel-input" accept=".xlsx,.xls" style="display:none" onchange="importResidentsExcel(this)">
+        <div class="ov" id="mod-excel">
+          <div class="msh">
+            <button class="mclose" onclick="closeMod('mod-excel')">✕</button>
+            <h3>🔄 استيراد وتصدير البيانات</h3>
+            <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:12px;padding:14px;margin-bottom:14px;border-right:4px solid #2563eb">
+              <div style="font-weight:800;font-size:13px;color:#1e40af;margin-bottom:8px;font-family:Cairo,sans-serif">📌 كيفية الاستخدام</div>
+              <div style="font-size:12px;color:#1e3a8a;line-height:2;font-family:Cairo,sans-serif">
+                <div>⬇️ <b>التصدير:</b> اختر الإقامة ثم اضغط "تصدير Excel" لتحميل ملف بيانات السكان</div>
+                <div>⬆️ <b>الاستيراد:</b> جهّز ملف Excel بأعمدة: <b>رقم الشقة، اسم المالك، الهاتف، الرسوم الشهرية</b></div>
+                <div>✅ <b>ملاحظة:</b> الاستيراد يضيف فقط — لا يحذف البيانات الموجودة</div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;padding:0 4px">
+                <select id="excel-residence-select" style="width:100%;padding:10px;border-radius:10px;border:1px solid #ccc;font-family:Cairo,sans-serif;font-size:14px">
+                  <option value="">🏢 كل الإقامات</option>
+                  {% for r in residences %}
+                  <option value="{{ r.id }}">{{ r.name }}</option>
+                  {% endfor %}
+                </select>
+              <button onclick="exportResidentsExcel();closeMod('mod-excel')" style="background:linear-gradient(135deg,#217346,#1a5c38);color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;cursor:pointer;font-family:Cairo,sans-serif;display:flex;align-items:center;justify-content:center;gap:10px">
+                <span>⬇️</span> تصدير Excel
+              </button>
+              <button onclick="document.getElementById('import-excel-input').click();closeMod('mod-excel')" style="background:linear-gradient(135deg,#1565c0,#0d47a1);color:#fff;border:none;border-radius:12px;padding:16px;font-size:15px;cursor:pointer;font-family:Cairo,sans-serif;display:flex;align-items:center;justify-content:center;gap:10px">
+                <span>⬆️</span> استيراد Excel
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="nav('accounting')" style="background:linear-gradient(135deg,#0f766e,#14b8a6);border:none;border-radius:14px;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 12px rgba(15,118,110,.3)">
+          <span style="font-size:20px">📊</span>
+          <span style="font-size:11px;color:#fff;font-weight:800;font-family:Cairo,sans-serif">المحاسبة</span>
+        </button>
+        <button onclick="nav('whatsapp')" style="background:linear-gradient(135deg,#25D366,#075E54);border:none;border-radius:14px;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 12px rgba(37,211,102,.3)">
+          <span style="font-size:20px">💬</span>
+          <span style="font-size:11px;color:#fff;font-weight:800;font-family:Cairo,sans-serif">واتساب</span>
+        </button>
+      </div>
+    </div>
+    <button onclick="nav('annexes')" style="width:100%;margin-top:8px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:12px;padding:10px 16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(124,58,237,.3)"><span style="font-size:18px">📋</span><span style="font-size:13px;color:#fff;font-weight:800;font-family:Cairo,sans-serif">ملاحق المرسوم 2.23.700</span></button>
+  </div>
+
+  <!-- APARTMENTS -->
+  <div class="scr" id="scr-apts">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-weight:700;font-size:15px">🏠 الشقق</span>
+      <button class="btn btn-p btn-sm" onclick="if(checkCanAddApartment())openMod('mod-addapt')">+ إضافة</button>
+    </div>
+    <div style="margin-bottom:12px">
+      <select id="apt-building-filter" onchange="filterAptsByBuilding()"
+        style="width:100%;padding:10px 14px;border:1px solid var(--brd);border-radius:10px;font-family:Cairo,sans-serif;font-size:13px;background:var(--card)">
+        <option value="">🏗️ كل العمارات</option>
+      </select>
+    </div>
+    <div id="apts-list"><div class="empty"><div class="empty-ico">🏗️</div><p>اختر إقامة أولاً</p></div></div>
+  </div>
+
+  <!-- PAYMENTS -->
+  <div class="scr" id="scr-payments">
+    <!-- تبويبان رئيسيان -->
+    <div class="tabs" style="margin-bottom:12px;display:flex;align-items:center;gap:6px">
+      <button class="tab on" id="pay-tab-list" onclick="switchPayTab('list')">📋 المدفوعات</button>
+      <button class="tab" id="pay-tab-requests" onclick="switchPayTab('requests')">📥 طلبات الأداء <span id="pay-req-badge" style="display:none;background:var(--err);color:#fff;border-radius:50%;font-size:10px;padding:1px 5px;margin-right:4px">0</span></button>
+      <select id="pay-building-filter" onchange="loadPayments()" style="margin-right:auto;padding:6px;border:1px solid var(--brd);border-radius:8px;font-size:12px;font-family:Cairo,sans-serif">
+        <option value="">🏗️ كل العمارات</option>
+      </select>
+    </div>
+
+    <!-- قسم المدفوعات الحالي -->
+    <div id="pay-section-list">
+    <div style="margin-bottom:8px">
+      <span style="font-weight:700;font-size:15px">💰 المدفوعات</span>
+      <div style="display:flex;gap:4px;align-items:center;margin-top:6px;width:100%">
+        <select id="pay-month" onchange="loadPayments()" style="flex:1;padding:6px;border:1px solid var(--brd);border-radius:8px;font-size:12px;font-family:Cairo,sans-serif">
+          <option value="1">يناير</option><option value="2">فبراير</option><option value="3">مارس</option>
+          <option value="4">أبريل</option><option value="5">ماي</option><option value="6">يونيو</option>
+          <option value="7">يوليوز</option><option value="8">غشت</option><option value="9">شتنبر</option>
+          <option value="10">أكتوبر</option><option value="11">نونبر</option><option value="12">دجنبر</option>
+        </select>
+        <select id="pay-year" onchange="loadPayments()" style="flex:1;padding:6px;border:1px solid var(--brd);border-radius:8px;font-size:12px;font-family:Cairo,sans-serif">
+          <option>2024</option><option>2025</option><option selected>2026</option><option>2027</option>
+        </select>
+        <button onclick="downloadMonthlyReport()" style="flex:1;background:#DC143C;color:#fff;border:none;border-radius:6px;padding:6px 4px;font-size:12px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">📄 PDF</button><button onclick="openReminderModal()" style="flex:1;background:#25D366;color:#fff;border:none;border-radius:6px;padding:6px 4px;font-size:12px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">🔔 تذكير</button>
+      </div>
+    </div>
+    <div id="pay-summary" style="display:flex;gap:8px;margin-bottom:10px"></div>
+    <div id="payments-list"></div>
+    </div><!-- end pay-section-list -->
+
+    <!-- قسم طلبات الأداء -->
+    <div id="pay-section-requests" style="display:none">
+      <div class="tabs" style="margin-bottom:10px">
+        <button class="tab on" onclick="filterPayReq('pending',this)" style="position:relative">⏳ معلقة<span id="pending-nav-badge" style="position:absolute;top:2px;right:2px;min-width:16px;height:16px;background:#ef4444;border-radius:50%;font-size:9px;font-weight:700;color:#fff;display:none;align-items:center;justify-content:center;border:2px solid #fff">0</span></button>
+        <button class="tab" onclick="filterPayReq('confirmed',this)">✅ مقبولة</button>
+        <button class="tab" onclick="filterPayReq('rejected',this)">❌ مرفوضة</button>
+        <button class="tab" onclick="filterPayReq('',this)">الكل</button>
+      </div>
+      <div id="pay-requests-list"></div>
+    </div>
+
+  </div>
+
+  <!-- COMPLAINTS -->
+  <div class="scr" id="scr-complaints">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-weight:700;font-size:15px">📋 الشكايات</span>
+      <button class="btn btn-p btn-sm" onclick="openMod('mod-addcomp')">+ جديدة</button>
+    </div>
+    <div class="tabs">
+      <button class="tab on" onclick="filterComp('',this)">الكل</button>
+      <button class="tab" onclick="filterComp('open',this)">مفتوحة</button>
+      <button class="tab" onclick="filterComp('progress',this)">قيد المعالجة</button>
+      <button class="tab" onclick="filterComp('closed',this)">مغلقة</button>
+    </div>
+    <div id="complaints-list"></div>
+  </div>
+
+  <!-- EXPENSES -->
+  <div class="scr" id="scr-expenses">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-weight:700;font-size:15px">💸 المصاريف</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button onclick="downloadExpensesReport()" style="background:#DC143C;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">📄 PDF</button>
+        <button class="btn btn-p btn-sm" onclick="openMod('mod-addexp')">+ مصروف</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:4px;align-items:center;margin-bottom:10px">
+      <select id="exp-month" onchange="loadExpenses()" style="flex:1;padding:6px;border:1px solid var(--brd);border-radius:8px;font-size:12px;font-family:Cairo,sans-serif">
+        <option value="">كل الشهور</option>
+        <option value="1">يناير</option><option value="2">فبراير</option><option value="3">مارس</option>
+        <option value="4">أبريل</option><option value="5">ماي</option><option value="6">يونيو</option>
+        <option value="7">يوليوز</option><option value="8">غشت</option><option value="9">شتنبر</option>
+        <option value="10">أكتوبر</option><option value="11">نونبر</option><option value="12">دجنبر</option>
+      </select>
+      <select id="exp-year" onchange="loadExpenses()" style="flex:1;padding:6px;border:1px solid var(--brd);border-radius:8px;font-size:12px;font-family:Cairo,sans-serif">
+        <option>2024</option><option>2025</option><option selected>2026</option><option>2027</option>
+      </select>
+    </div>
+    <div id="expenses-list"></div>
+  </div>
+
+  <!-- WORKERS -->
+  <div class="scr" id="scr-workers">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-weight:700;font-size:15px">👷 العمال</span>
+      <button class="btn btn-p btn-full" onclick="openMod('mod-addwrk')" style="background:linear-gradient(135deg,#0891b2,#67e8f9);color:#fff;padding:12px;border-radius:10px;font-weight:700;font-size:14px">➕ إضافة عامل جديد</button>
+    </div>
+    <div id="workers-list"></div>
+  </div>
+
+  <!-- RESIDENTS -->
+<!-- صفحة تفاصيل العامل -->
+<div class="scr" id="scr-worker-detail" style="display:none">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb">
+    <button class="btn btn-ghost btn-sm" onclick="nav('workers')">← الرجوع</button>
+    <h2 style="flex:1;margin:0;font-size:18px;font-weight:800">👷 تفاصيل العامل</h2>
+  </div>
+  <div id="worker-detail-content"></div>
+</div>
+  <div class="scr" id="scr-residents">
+    <div style="font-weight:700;font-size:15px;margin-bottom:12px">👥 السكان</div>
+
+    <!-- طريقة البحث -->
+    <div class="tabs" style="margin-bottom:10px">
+      <button class="tab on" id="search-tab-text" onclick="switchResSearch('text')">🔍 بحث نصي</button>
+      <button class="tab" id="search-tab-struct" onclick="switchResSearch('struct')">🏗️ بحث هيكلي</button>
+    </div>
+
+    <!-- البحث النصي -->
+    <div id="res-search-text" style="margin-bottom:10px">
+      <input id="res-search-input" type="text" placeholder="اسم المالك / القاطن / CIN / هاتف..."
+        style="width:100%;padding:10px 14px;border:1px solid var(--brd);border-radius:10px;font-family:Cairo,sans-serif;font-size:13px"
+        oninput="searchResidents(this.value)">
+    </div>
+
+    <!-- البحث الهيكلي -->
+    <div id="res-search-struct" style="display:none;margin-bottom:10px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <div class="fg" style="margin:0">
+          <select id="struct-building" onchange="structSearch()" style="width:100%;padding:8px;border:1px solid var(--brd);border-radius:8px;font-family:Cairo,sans-serif;font-size:12px">
+            <option value="">🏗️ العمارة</option>
+          </select>
+        </div>
+        <div class="fg" style="margin:0">
+          <select id="struct-floor" onchange="structSearch()" style="width:100%;padding:8px;border:1px solid var(--brd);border-radius:8px;font-family:Cairo,sans-serif;font-size:12px">
+            <option value="">🏢 الطابق</option>
+          </select>
+        </div>
+        <div class="fg" style="margin:0">
+          <input id="struct-apt" type="text" placeholder="🏠 الشقة" oninput="structSearch()"
+            style="width:100%;padding:8px;border:1px solid var(--brd);border-radius:8px;font-family:Cairo,sans-serif;font-size:12px">
+        </div>
+      </div>
+    </div>
+
+    <!-- فلتر الحالة -->
+    <div class="tabs">
+      <button class="tab on" onclick="filterRes2('all')">الكل</button>
+      <button class="tab" onclick="filterRes2('pending')" style="position:relative">بانتظار القبول<span id="res-nav-badge" style="position:absolute;top:2px;right:2px;min-width:16px;height:16px;background:#ef4444;border-radius:50%;font-size:9px;font-weight:700;color:#fff;display:none;align-items:center;justify-content:center;border:2px solid #fff">0</span></button>
+      <button class="tab" onclick="filterRes2('approved')">مقبولون</button>
+    </div>
+    <div id="residents-list"></div>
+  </div>
+
+  <!-- SUPPORT -->
+  <div class="scr" id="scr-support">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-weight:700;font-size:15px">📩 الدعم والتواصل</span>
+      <button class="btn btn-p btn-sm" onclick="openMod('mod-new-ticket')">+ تذكرة جديدة</button>
+    </div>
+    <div class="alert alert-info" style="margin-bottom:12px;font-size:12px">
+      هل لديك مشكلة أو سؤال؟ أرسل تذكرة وسيرد عليك المدير في أقرب وقت.
+    </div>
+    <div id="tickets-list"><div class="empty"><div class="empty-ico">📩</div><p>لا توجد تذاكر بعد</p></div></div>
+  </div>
+
+  <!-- ANNEXES -->
+  <div class="scr" id="scr-annexes">
+    <div style="font-weight:700;font-size:15px;margin-bottom:12px">📋 ملاحق المرسوم 2.23.700</div>
+    <div id="annexes-content"><div class="empty"><div class="empty-ico">📋</div><p>اضغط لتحميل الملاحق</p></div></div>
+  </div>
+
+  <!-- ACCOUNTING DASHBOARD -->
+  <div class="scr" id="scr-accounting">
+
+    <!-- Header + فلاتر -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-weight:800;font-size:16px;font-family:Cairo,sans-serif">📊 مركز المراقبة المالية</div>
+      <div style="display:flex;gap:4px">
+        <select id="acc-month" onchange="loadAccounting()" style="padding:4px 6px;border:1px solid var(--brd);border-radius:8px;font-size:11px;font-family:Cairo,sans-serif">
+          <option value="">كل الشهور</option>
+          <option value="1">يناير</option><option value="2">فبراير</option><option value="3">مارس</option>
+          <option value="4">أبريل</option><option value="5">ماي</option><option value="6">يونيو</option>
+          <option value="7">يوليوز</option><option value="8">غشت</option><option value="9">شتنبر</option>
+          <option value="10">أكتوبر</option><option value="11">نونبر</option><option value="12">دجنبر</option>
+        </select>
+        <select id="acc-year" onchange="loadAccounting()" style="padding:4px 6px;border:1px solid var(--brd);border-radius:8px;font-size:11px;font-family:Cairo,sans-serif">
+          <option value="2024">2024</option><option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 4 مربعات KPI -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:linear-gradient(135deg,#059669,#10b981);border-radius:14px;padding:14px;color:#fff;position:relative;overflow:hidden">
+        <div style="font-size:10px;opacity:.8;font-family:Cairo,sans-serif;margin-bottom:4px">🟢 الرصيد الحالي</div>
+        <div id="acc-balance" style="font-size:20px;font-weight:900;font-family:Cairo,sans-serif">—</div>
+        <div style="font-size:10px;opacity:.7;margin-top:2px">درهم</div>
+        <div style="position:absolute;left:-10px;bottom:-10px;width:60px;height:60px;background:rgba(255,255,255,.1);border-radius:50%"></div>
+      </div>
+      <div style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:14px;padding:14px;color:#fff;position:relative;overflow:hidden">
+        <div style="font-size:10px;opacity:.8;font-family:Cairo,sans-serif;margin-bottom:4px">💰 المداخيل</div>
+        <div id="acc-income" style="font-size:20px;font-weight:900;font-family:Cairo,sans-serif">—</div>
+        <div style="font-size:10px;opacity:.7;margin-top:2px">درهم</div>
+        <div style="position:absolute;left:-10px;bottom:-10px;width:60px;height:60px;background:rgba(255,255,255,.1);border-radius:50%"></div>
+      </div>
+      <div style="background:linear-gradient(135deg,#dc2626,#f87171);border-radius:14px;padding:14px;color:#fff;position:relative;overflow:hidden">
+        <div style="font-size:10px;opacity:.8;font-family:Cairo,sans-serif;margin-bottom:4px">🧾 المصاريف</div>
+        <div id="acc-expense" style="font-size:20px;font-weight:900;font-family:Cairo,sans-serif">—</div>
+        <div style="font-size:10px;opacity:.7;margin-top:2px">درهم</div>
+        <div style="position:absolute;left:-10px;bottom:-10px;width:60px;height:60px;background:rgba(255,255,255,.1);border-radius:50%"></div>
+      </div>
+      <div style="background:linear-gradient(135deg,#d97706,#f59e0b);border-radius:14px;padding:14px;color:#fff;position:relative;overflow:hidden">
+        <div style="font-size:10px;opacity:.8;font-family:Cairo,sans-serif;margin-bottom:4px">❌ المتأخرات</div>
+        <div id="acc-late" style="font-size:20px;font-weight:900;font-family:Cairo,sans-serif">—</div>
+        <div style="font-size:10px;opacity:.7;margin-top:2px">درهم</div>
+        <div style="position:absolute;left:-10px;bottom:-10px;width:60px;height:60px;background:rgba(255,255,255,.1);border-radius:50%"></div>
+      </div>
+    </div>
+
+    <!-- تنبيهات ذكية -->
+    <div id="acc-alerts" style="margin-bottom:12px"></div>
+
+    <!-- حالة الشقق -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-title">🏠 حالة الشقق</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <div style="flex:1;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:10px;padding:10px;text-align:center">
+          <div id="acc-paid-count" style="font-size:22px;font-weight:900;color:#059669;font-family:Cairo,sans-serif">—</div>
+          <div style="font-size:11px;color:#059669;font-weight:600">✅ دفعوا</div>
+        </div>
+        <div style="flex:1;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;padding:10px;text-align:center">
+          <div id="acc-late-count" style="font-size:22px;font-weight:900;color:#d97706;font-family:Cairo,sans-serif">—</div>
+          <div style="font-size:11px;color:#d97706;font-weight:600">❌ لم يدفعوا</div>
+        </div>
+        <div style="flex:1;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;padding:10px;text-align:center">
+          <div id="acc-total-count" style="font-size:22px;font-weight:900;color:#1d4ed8;font-family:Cairo,sans-serif">—</div>
+          <div style="font-size:11px;color:#1d4ed8;font-weight:600">📦 الكل</div>
+        </div>
+      </div>
+      <!-- شريط التقدم -->
+      <div style="background:#f1f5f9;border-radius:99px;height:10px;overflow:hidden">
+        <div id="acc-progress-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#059669,#10b981);transition:width .5s ease;width:0%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px">
+        <span id="acc-progress-pct" style="font-size:11px;color:var(--muted);font-family:Cairo,sans-serif">0%</span>
+        <button onclick="nav('payments')" style="font-size:11px;color:var(--p);background:none;border:none;cursor:pointer;font-family:Cairo,sans-serif;font-weight:700">عرض التفاصيل ←</button>
+      </div>
+    </div>
+
+    <!-- الرسم البياني -->
+    <div class="card" style="margin-bottom:10px">
+      <div class="card-title">📈 المداخيل والمصاريف شهرياً</div>
+      <canvas id="acc-chart" height="160" style="width:100%"></canvas>
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:8px">
+        <span style="font-size:11px;color:#3b82f6;font-weight:700">■ المداخيل</span>
+        <span style="font-size:11px;color:#f87171;font-weight:700">■ المصاريف</span>
+      </div>
+    </div>
+
+    <!-- آخر العمليات -->
+    <div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div class="card-title" style="margin-bottom:0">⏱ آخر العمليات</div>
+        <div style="display:flex;gap:4px">
+          <button id="acc-tab-pay" onclick="accTab('pay')" style="font-size:11px;padding:3px 8px;border-radius:6px;border:1.5px solid var(--p);background:var(--p);color:#fff;cursor:pointer;font-family:Cairo,sans-serif">أداءات</button>
+          <button id="acc-tab-exp" onclick="accTab('exp')" style="font-size:11px;padding:3px 8px;border-radius:6px;border:1.5px solid var(--brd);background:#fff;color:var(--muted);cursor:pointer;font-family:Cairo,sans-serif">مصاريف</button>
+        </div>
+      </div>
+      <div id="acc-ops-list" style="display:flex;flex-direction:column;gap:6px">
+        <div class="empty"><div class="empty-ico">⏳</div><p>جاري التحميل...</p></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- WHATSAPP -->
+  <div class="scr" id="scr-whatsapp">
+    <div style="background:linear-gradient(135deg,#25D366,#075E54);border-radius:16px;padding:20px;color:#fff;margin-bottom:16px;text-align:center">
+      <div style="font-size:48px">💬</div>
+      <h2 style="font-size:18px;font-weight:900;margin:4px 0">مركز واتساب</h2>
+      <p style="font-size:12px;opacity:.85;margin:0">تذكير السكان وإرسال التقارير</p>
+    </div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-title">⚡ إجراءات سريعة</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <button onclick="openReminderModal()" style="background:#25D366;color:#fff;border:none;border-radius:12px;padding:14px 8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">🔔 تذكير</button>
+        <button onclick="waReport()" style="background:#128C7E;color:#fff;border:none;border-radius:12px;padding:14px 8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">📊 تقرير الشهر</button>
+        <button onclick="nav('support')" style="background:#f1f5f9;color:#475569;border:none;border-radius:12px;padding:14px 8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;grid-column:1/3">📩 الدعم الفني</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚠️ لم يدفعوا هذا الشهر</div>
+      <div id="wa-late-list"><div class="empty"><div class="empty-ico">⏳</div><p>جاري التحميل...</p></div></div>
+    </div>
+  </div>
+
+    <!-- REPORTS -->
+  <div class="scr" id="scr-reports">
+    <div style="font-weight:700;font-size:15px;margin-bottom:12px">📊 التقارير</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px;align-items:center">
+      <select id="report-month" onchange="loadReports()" style="flex:1;padding:6px;border:1px solid var(--brd);border-radius:8px;font-size:12px;font-family:Cairo,sans-serif">
+        <option value="">كل السنة</option>
+        <option value="1">يناير</option><option value="2">فبراير</option><option value="3">مارس</option>
+        <option value="4">أبريل</option><option value="5">ماي</option><option value="6">يونيو</option>
+        <option value="7">يوليوز</option><option value="8">غشت</option><option value="9">شتنبر</option>
+        <option value="10">أكتوبر</option><option value="11">نونبر</option><option value="12">دجنبر</option>
+      </select>
+      <select id="report-year" onchange="loadReports()" style="flex:1;padding:6px;border:1px solid var(--brd);border-radius:8px;font-size:12px;font-family:Cairo,sans-serif">
+        <option value="2024">2024</option><option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
+      </select>
+      <button onclick="downloadFullReport()" style="flex:1;background:#1e40af;color:#fff;border:none;border-radius:8px;padding:6px 4px;font-size:12px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif">📄 PDF</button>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 ملخص مالي</div>
+      <div id="stats-content" style="margin-bottom:10px"></div>
+      <div id="report-content"><div class="empty"><div class="empty-ico">📊</div><p>اختر إقامة لعرض التقرير</p></div></div>
+    </div>
+  </div>
+  <!-- ACCOUNT -->
+  <div class="scr" id="scr-account">
+    <div style="font-weight:700;font-size:15px;margin-bottom:12px">👤 حسابي</div>
+<div class="card" id="account-info"></div>
+<div class="card">
+  <div class="card-title">🔐 الأمان</div>
+  <button class="btn btn-ghost btn-full" onclick="openChangePassword()" style="text-align:right;justify-content:flex-start;gap:10px;display:flex;align-items:center">
+    <span style="font-size:18px">🔑</span>
+    <div>
+      <div style="font-weight:700;font-size:13px">تغيير كلمة المرور</div>
+      <div style="font-size:11px;color:var(--muted)">يُنصح بتغييرها بانتظام</div>
+    </div>
+    <span style="margin-right:auto;color:var(--muted)">←</span>
+  </button>
+</div>
+
+<div class="ov" id="mod-pay">
+  <div class="msh" style="max-height:90vh;overflow-y:auto">
+    <button class="mclose" onclick="closeMod('mod-pay')">X</button>
+    <h3 id="pay-mod-title">💰 تسجيل المدفوعات</h3>
+
+    <!-- معلومات الشقة -->
+    <div id="pay-apt-info" style="background:#f0f7ff;border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px"></div>
+
+    <!-- شبكة الأشهر -->
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600">اختر الأشهر للمصادقة على الأداء</div>
+    <div id="pay-months-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px"></div>
+
+    <!-- تفاصيل الدفع -->
+    <div id="pay-detail-form" style="display:none">
+      <div style="border-top:1px solid var(--brd);padding-top:12px;margin-top:4px">
+        <div class="row2">
+          <div class="fg"><label>المبلغ</label><input id="pay-amount" type="number" placeholder="300"></div>
+          <div class="fg"><label>التاريخ</label><input id="pay-date" type="date"></div>
+        </div>
+        <div class="fg"><label>طريقة الدفع</label>
+          <select id="pay-method">
+            <option value="نقدي">نقدي</option>
+            <option value="تحويل بنكي">تحويل بنكي</option>
+            <option value="بطاقة بنكية">بطاقة بنكية</option>
+          </select>
+        </div>
+        <div class="fg"><label>ملاحظة</label><input id="pay-note" placeholder="اختياري"></div>
+        <button class="btn btn-ok btn-full" onclick="savePay()">✅ حفظ الدفعة</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <div class="card-title">📦 خطة الاشتراك</div>
+  <div id="plan-info"></div>
+</div>
+<div class="card" id="subscription-pay-card">
+  <div class="card-title">💳 تجديد الاشتراك</div>
+
+  <!-- خطوة 1: اختيار الخطة والمدة -->
+  <div id="renew-step1">
+    <div class="fg">
+      <label>الخطة</label>
+      <select id="renew-plan" onchange="calcRenewTotal()">
+        <option value="starter" data-price="39">🟢 Starter الانطلاقة — 39 درهم/شهر</option>
+        <option value="standard" data-price="79">🔵 Standard السنديك الحقيقي — 79 درهم/شهر</option>
+        <option value="professional" data-price="129">🟣 Professional احترافية — 129 درهم/شهر</option>
+        <option value="enterprise" data-price="199">🔴 Enterprise المدن والشركات — 199+ درهم</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>مدة الاشتراك</label>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px">
+        <div onclick="selectRenewDuration(1)" id="rd-1" class="renew-dur-btn" style="border:2px solid var(--brd);border-radius:8px;padding:8px;text-align:center;cursor:pointer">
+          <div style="font-weight:700">1 شهر</div>
+        </div>
+        <div onclick="selectRenewDuration(3)" id="rd-3" class="renew-dur-btn" style="border:2px solid var(--brd);border-radius:8px;padding:8px;text-align:center;cursor:pointer">
+          <div style="font-weight:700">3 أشهر</div>
+        </div>
+        <div onclick="selectRenewDuration(6)" id="rd-6" class="renew-dur-btn" style="border:2px solid var(--brd);border-radius:8px;padding:8px;text-align:center;cursor:pointer">
+          <div style="font-weight:700">6 أشهر</div>
+        </div>
+        <div onclick="selectRenewDuration(12)" id="rd-12" class="renew-dur-btn" style="border:2px solid var(--brd);border-radius:8px;padding:8px;text-align:center;cursor:pointer">
+          <div style="font-weight:700">12 شهر</div>
+          <div style="font-size:10px;color:var(--ok)">خصم 10%</div>
+        </div>
+        <div onclick="selectRenewDuration(24)" id="rd-24" class="renew-dur-btn" style="border:2px solid var(--brd);border-radius:8px;padding:8px;text-align:center;cursor:pointer">
+          <div style="font-weight:700">24 شهر</div>
+          <div style="font-size:10px;color:var(--ok)">خصم 20%</div>
+        </div>
+      </div>
+    </div>
+    <div id="renew-total-box" style="display:none;background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;border-radius:10px;padding:12px;text-align:center;margin:10px 0">
+      <div style="font-size:11px;opacity:.8">المجموع الإجمالي</div>
+      <div style="font-size:28px;font-weight:900" id="renew-total-amount">0 درهم</div>
+      <div style="font-size:11px;opacity:.7" id="renew-total-detail"></div>
+    </div>
+    <button class="btn btn-p btn-full" onclick="goRenewStep2()" style="margin-top:8px">التالي — اختر طريقة الأداء ←</button>
+  </div>
+
+  <!-- خطوة 2: طريقة الأداء -->
+  <div id="renew-step2" style="display:none">
+    <div style="background:#f8fafc;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px" id="renew-step2-summary"></div>
+    <div style="display:grid;gap:8px;margin-bottom:12px">
+      <label onclick="selectRenewMethod('virement')" id="rm-opt-virement" style="border:2px solid var(--brd);border-radius:10px;padding:12px;cursor:pointer;display:flex;align-items:center;gap:10px">
+        <input type="radio" name="renew-method" value="virement" style="accent-color:var(--p)">
+        <span style="font-size:16px">🏦</span><span style="font-weight:600">تحويل بنكي</span>
+      </label>
+      <label onclick="selectRenewMethod('paypal')" id="rm-opt-paypal" style="border:2px solid var(--brd);border-radius:10px;padding:12px;cursor:pointer;display:flex;align-items:center;gap:10px">
+        <input type="radio" name="renew-method" value="paypal" style="accent-color:var(--p)">
+        <span style="font-size:16px">🌐</span><span style="font-weight:600">PayPal</span>
+      </label>
+      <label onclick="selectRenewMethod('cmi')" id="rm-opt-cmi" style="border:2px solid var(--brd);border-radius:10px;padding:12px;cursor:pointer;display:flex;align-items:center;gap:10px">
+        <input type="radio" name="renew-method" value="cmi" style="accent-color:var(--p)">
+        <span style="font-size:16px">💳</span><span style="font-weight:600">بطاقة وطنية CMI</span>
+      </label>
+    </div>
+
+    <!-- تفاصيل التحويل -->
+    <div id="rm-detail-virement" style="display:none;background:#eff6ff;border-radius:10px;padding:12px;margin-bottom:10px">
+      <div style="font-weight:700;margin-bottom:6px">🏦 معلومات التحويل</div>
+      <div style="font-size:12px;line-height:2">
+        <b>البنك:</b> CIH Bank<br>
+        <b>RIB:</b> 230 810 0123456789012345 67<br>
+        <b>المستفيد:</b> SyndikPro SARL<br>
+        <b>المرجع:</b> اسم المستخدم الخاص بك
+      </div>
+      <div class="fg" style="margin-top:10px"><label>رفع وصل التحويل (صورة أو PDF) *</label>
+        <input type="file" id="renew-proof-virement" accept="image/*,application/pdf">
+      </div>
+    </div>
+
+    <!-- تفاصيل PayPal -->
+    <div id="rm-detail-paypal" style="display:none;background:#eff6ff;border-radius:10px;padding:12px;margin-bottom:10px">
+      <div style="font-weight:700;margin-bottom:6px">🌐 الدفع عبر PayPal</div>
+      <div style="background:#fff;border-radius:8px;padding:10px;text-align:center;font-weight:700;font-size:14px;border:2px dashed var(--p);margin:8px 0">
+        <span class="paypal-address-box">payments@syndikpro.ma</span>
+      </div>
+      <div class="alert alert-warn" style="font-size:12px">أرسل المبلغ ثم ارفع لقطة الشاشة أو PDF</div>
+      <div class="fg" style="margin-top:8px"><label>رفع الوصل (صورة أو PDF) *</label>
+        <input type="file" id="renew-proof-paypal" accept="image/*,application/pdf">
+      </div>
+    </div>
+
+    <!-- تفاصيل CMI -->
+    <div id="rm-detail-cmi" style="display:none;background:#eff6ff;border-radius:10px;padding:12px;margin-bottom:10px">
+      <div style="font-weight:700;margin-bottom:6px">💳 الدفع عبر CMI</div>
+      <div class="alert alert-warn" style="font-size:12px">🔒 سيتم تفعيل الدفع الإلكتروني قريباً — أدخل بياناتك الآن</div>
+      <div class="fg"><label>رقم البطاقة</label>
+        <input id="renew-cmi-card" placeholder="XXXX XXXX XXXX XXXX" maxlength="19"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'').replace(/(.{4})/g,'$1 ').trim()">
+      </div>
+      <div class="row2">
+        <div class="fg"><label>تاريخ الانتهاء</label><input id="renew-cmi-exp" placeholder="MM/YY" maxlength="5"></div>
+        <div class="fg"><label>CVV</label><input id="renew-cmi-cvv" placeholder="XXX" maxlength="3" type="password"></div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:8px">
+
+
+<!-- ========== ACCOUNTING DASHBOARD JS ========== -->
+<script>
+(function(){
+  // Chart.js CDN يجب أن يكون محملاً في الـ parent
+  // نستخدم canvas API مباشرة إذا لم يكن Chart.js متوفراً
+
+  let accData = null;
+  let accCurrentTab = 'pay';
+
+  function fmt(n){ return Number(n||0).toLocaleString('ar-MA'); }
+
+  window.loadAccounting = function(){
+    const month = document.getElementById('acc-month')?.value || '';
+    const year  = document.getElementById('acc-year')?.value  || new Date().getFullYear();
+    let url = `/api/accounting?year=${year}`;
+    if(month) url += `&month=${month}`;
+
+    // Loading state
+    ['acc-balance','acc-income','acc-expense','acc-late'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.textContent = '...';
+    });
+
+    fetch(url)
+      .then(r=>r.json())
+      .then(d=>{
+        accData = d;
+        renderKPIs(d);
+        renderApartmentStatus(d);
+        renderChart(d);
+        renderOps(d, accCurrentTab);
+        renderAlerts(d);
+      })
+      .catch(()=>{
+        // fallback: بيانات تجريبية للمعاينة
+        const demo = {
+          total_income: 12000, total_expense: 6600,
+          payments: [{apartment_number:'11',amount:300,month:6,year:2026,date_paid:'2026-06-01'},{apartment_number:'3',amount:300,month:6,year:2026,date_paid:'2026-06-03'}],
+          expenses: [{label:'فاتورة كهرباء',amount:450,date:'2026-06-05'},{label:'صيانة مصعد',amount:800,date:'2026-05-20'}],
+          monthly: {'2026-01':{income:3000,expense:900},'2026-02':{income:3200,expense:1200},'2026-03':{income:2800,expense:700},'2026-04':{income:3100,expense:1400},'2026-05':{income:2900,expense:1100},'2026-06':{income:12000,expense:6600}},
+          paid_apts: 11, total_apts: 17, late_amount: 2400
+        };
+        accData = demo;
+        renderKPIs(demo);
+        renderApartmentStatus(demo);
+        renderChart(demo);
+        renderOps(demo, accCurrentTab);
+        renderAlerts(demo);
+      });
+  };
+
+  function renderKPIs(d){
+    const income  = d.total_income  || 0;
+    const expense = d.total_expense || 0;
+    const balance = income - expense;
+    const late    = d.late_amount   || 0;
+
+    const el = (id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=fmt(v); };
+    el('acc-balance', balance);
+    el('acc-income',  income);
+    el('acc-expense', expense);
+    el('acc-late',    late);
+
+    // لون الرصيد
+    const balEl = document.getElementById('acc-balance');
+    if(balEl && balEl.parentElement){
+      const bg = balance >= 0
+        ? 'linear-gradient(135deg,#059669,#10b981)'
+        : 'linear-gradient(135deg,#dc2626,#ef4444)';
+      balEl.parentElement.style.background = bg;
+    }
+  }
+
+  function renderApartmentStatus(d){
+    const paid  = d.paid_apts  || (d.payments ? [...new Set(d.payments.map(p=>p.apartment_id||p.apartment_number))].length : 0);
+    const total = d.total_apts || 17;
+    const late  = total - paid;
+    const pct   = total > 0 ? Math.round((paid/total)*100) : 0;
+
+    const s = (id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+    s('acc-paid-count',  paid);
+    s('acc-late-count',  late);
+    s('acc-total-count', total);
+    s('acc-progress-pct', pct + '%');
+
+    const bar = document.getElementById('acc-progress-bar');
+    if(bar){
+      bar.style.width = pct + '%';
+      bar.style.background = pct >= 80
+        ? 'linear-gradient(90deg,#059669,#10b981)'
+        : pct >= 50
+          ? 'linear-gradient(90deg,#d97706,#f59e0b)'
+          : 'linear-gradient(90deg,#dc2626,#f87171)';
+    }
+  }
+
+  function renderChart(d){
+    const canvas = document.getElementById('acc-chart');
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const monthly = d.monthly || {};
+    const keys = Object.keys(monthly).sort().slice(-6);
+    const incomes  = keys.map(k=>(monthly[k]||{}).income  || 0);
+    const expenses = keys.map(k=>(monthly[k]||{}).expense || 0);
+    const labels   = keys.map(k=>{ const [y,m]=k.split('-'); const mn=['','يناير','فبراير','مارس','أبريل','ماي','يونيو','يوليوز','غشت','شتنبر','أكتوبر','نونبر','دجنبر']; return mn[+m]||m; });
+
+    // رسم بياني يدوي بدون مكتبة
+    const W = canvas.offsetWidth || 300;
+    const H = 160;
+    canvas.width  = W * (window.devicePixelRatio||1);
+    canvas.height = H * (window.devicePixelRatio||1);
+    ctx.scale(window.devicePixelRatio||1, window.devicePixelRatio||1);
+
+    ctx.clearRect(0,0,W,H);
+    const maxVal = Math.max(...incomes, ...expenses, 1);
+    const padL=10, padR=10, padT=10, padB=30;
+    const chartW = W-padL-padR;
+    const chartH = H-padT-padB;
+    const n = keys.length || 1;
+    const barW = (chartW/n)*0.32;
+    const gap  = (chartW/n)*0.36;
+
+    // خطوط خلفية
+    ctx.strokeStyle='#f1f5f9'; ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){
+      const y = padT + (chartH/4)*i;
+      ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(W-padR,y); ctx.stroke();
+    }
+
+    keys.forEach((k,i)=>{
+      const x = padL + (chartW/n)*i + gap/2;
+      // عمود المداخيل
+      const ih = (incomes[i]/maxVal)*chartH;
+      ctx.fillStyle='#3b82f6';
+      ctx.beginPath();
+      ctx.roundRect(x, padT+chartH-ih, barW, ih, [4,4,0,0]);
+      ctx.fill();
+      // عمود المصاريف
+      const eh = (expenses[i]/maxVal)*chartH;
+      ctx.fillStyle='#f87171';
+      ctx.beginPath();
+      ctx.roundRect(x+barW+2, padT+chartH-eh, barW, eh, [4,4,0,0]);
+      ctx.fill();
+      // label
+      ctx.fillStyle='#64748b'; ctx.font='9px Cairo,sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText(labels[i], x+barW+1, H-padB+14);
+    });
+  }
+
+  function renderOps(d, tab){
+    const el = document.getElementById('acc-ops-list');
+    if(!el) return;
+    let items = [];
+    if(tab==='pay'){
+      items = (d.payments||[]).slice(-8).reverse().map(p=>({
+        icon:'💰', label: `شقة ${p.apartment_number||p.apartment_id} — شهر ${p.month}/${p.year}`,
+        amount: `+${fmt(p.amount)}`, color:'#059669'
+      }));
+    } else {
+      items = (d.expenses||[]).slice(-8).reverse().map(e=>({
+        icon:'🧾', label: e.label||e.description||'مصروف',
+        amount: `-${fmt(e.amount)}`, color:'#dc2626'
+      }));
+    }
+    if(!items.length){
+      el.innerHTML='<div class="empty"><div class="empty-ico">📭</div><p>لا توجد عمليات</p></div>';
+      return;
+    }
+    el.innerHTML = items.map(it=>`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#f8fafc;border-radius:10px;border-right:3px solid ${it.color}">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:16px">${it.icon}</span>
+          <span style="font-size:12px;font-family:Cairo,sans-serif;font-weight:600">${it.label}</span>
+        </div>
+        <span style="font-size:13px;font-weight:900;color:${it.color};font-family:Cairo,sans-serif">${it.amount}</span>
+      </div>`).join('');
+  }
+
+  function renderAlerts(d){
+    const el = document.getElementById('acc-alerts');
+    if(!el) return;
+    const alerts = [];
+    const income  = d.total_income  || 0;
+    const expense = d.total_expense || 0;
+    const paid    = d.paid_apts  || 0;
+    const total   = d.total_apts || 0;
+    const late    = total - paid;
+
+    if(late > 0)
+      alerts.push({ ico:'⚠️', txt: `${late} شقق لم تدفع بعد هذا الشهر`, color:'#d97706', bg:'#fffbeb' });
+    if(expense > income && income > 0)
+      alerts.push({ ico:'🔴', txt: 'المصاريف تتجاوز المداخيل — يُنصح بمراجعة الميزانية', color:'#dc2626', bg:'#fef2f2' });
+    if(income - expense < 500 && income > 0)
+      alerts.push({ ico:'🟡', txt: 'الرصيد منخفض — تأكد من تحصيل المتأخرات', color:'#d97706', bg:'#fffbeb' });
+    if(late === 0 && total > 0)
+      alerts.push({ ico:'✅', txt: 'ممتاز! جميع الشقق أدّت هذا الشهر', color:'#059669', bg:'#f0fdf4' });
+    if(!alerts.length){ el.innerHTML=''; return; }
+
+    el.innerHTML = alerts.map(a=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:${a.bg};border-radius:10px;border-right:3px solid ${a.color};margin-bottom:6px">
+        <span style="font-size:16px">${a.ico}</span>
+        <span style="font-size:12px;font-family:Cairo,sans-serif;font-weight:600;color:${a.color}">${a.txt}</span>
+      </div>`).join('');
+  }
+
+  window.accTab = function(tab){
+    accCurrentTab = tab;
+    const tabs = {pay:'acc-tab-pay', exp:'acc-tab-exp'};
+    Object.entries(tabs).forEach(([k,id])=>{
+      const btn = document.getElementById(id);
+      if(!btn) return;
+      if(k===tab){
+        btn.style.background='var(--p)'; btn.style.color='#fff'; btn.style.borderColor='var(--p)';
+      } else {
+        btn.style.background='#fff'; btn.style.color='var(--muted)'; btn.style.borderColor='var(--brd)';
+      }
+    });
+    if(accData) renderOps(accData, tab);
+  };
+
+  // تحميل عند الانتقال لشاشة المحاسبة
+  const _origNav = window.nav;
+  if(typeof window.nav === 'function'){
+    window.nav = function(screen){
+      _origNav(screen);
+      if(screen === 'accounting') setTimeout(window.loadAccounting, 100);
+    };
+  } else {
+    // fallback: نراقب ظهور الشاشة
+    const observer = new MutationObserver(()=>{
+      const scr = document.getElementById('scr-accounting');
+      if(scr && scr.classList.contains('on') && !scr.dataset.loaded){
+        scr.dataset.loaded = '1';
+        window.loadAccounting();
+      }
+    });
+    observer.observe(document.body, {attributes:true, subtree:true, attributeFilter:['class']});
+  }
+})();
+</script>

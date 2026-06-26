@@ -1,0 +1,139 @@
+=== syndic_register (app.py) ===
+def syndic_register():
+    full_name    = request.form.get('full_name','').strip()
+    username     = request.form.get('username','').strip()
+    email        = request.form.get('email','').strip()
+    phone        = request.form.get('phone','').strip()
+    city         = request.form.get('city','').strip()
+    neighborhood = request.form.get('neighborhood','').strip()
+    country      = request.form.get('country','المغرب').strip()
+    password     = request.form.get('password','')
+
+    if not all([full_name,username,email,phone,password]):
+        return jsonify({'error':'جميع الحقول مطلوبة'}),400
+    # توليد username تلقائي إذا كان مكرراً
+    base = username if username else email.split('@')[0]
+    username = base
+    counter = 1
+    while User.query.filter_by(username=username).first():
+        username = f'{base}{counter}'
+        counter += 1
+    if User.query.filter_by(email=email).first():
+        return jsonify({'error':'البريد الإلكتروني مستخدم مسبقاً'}),400
+
+    pay_method = request.form.get('pay_method','')
+    proof_path = ''
+    if 'payment_proof' in request.files:
+        f = request.files['payment_proof']
+        if f and f.filename and allowed_file(f.filename):
+            from werkzeug.utils import secure_filename
+            fn = secure_filename(f.filename)
+            fp = os.path.join(app.config['UPLOAD_FOLDER'], fn)
+            f.save(fp)
+            proof_path = f'static/uploads/{fn}'
+
+    u = User(
+        username=username, full_name=full_name, email=email,
+        phone=phone, city=city, neighborhood=neighborhood, country=country,
+        password_hash=generate_password_hash(password),
+        role='syndic', status='pending', plan=request.form.get('plan','free'),
+        payment_proof=proof_path, payment_date=datetime.utcnow(), pay_method=pay_method,
+        payment_method=pay_method,
+        total_amount=float(request.form.get('total_amount', 0) or 0),
+        duration_months=int(request.form.get('duration_months') or request.form.get('months') or 1)
+    )
+    db.session.add(u)
+    db.session.commit()
+    return jsonify({'ok':True,'message':'تم إرسال طلبك بنجاح، في انتظار المصادقة'})
+
+# ═══════════════════════════════
+#  ADMIN — لوحة المدير العام
+# ═══════════════════════════════
+
+# إحصائيات عامة
+@app.route('/api/admin/stats')
+=== admin_approve_syndic (admin.py) ===
+def admin_approve_syndic(sid):
+    data = request.get_json() or {}
+    u = User.query.get_or_404(sid)
+    action = data.get("action","approve")
+    plan   = data.get("plan","starter")
+    months = int(data.get("months",1))
+    if action == "approve":
+        u.status = "active"; u.plan = plan
+        u.approved_by = session["user_id"]; u.approved_at = datetime.utcnow()
+        u.subscription_start = datetime.utcnow()
+        u.subscription_end   = datetime.utcnow() + timedelta(days=30*months)
+    elif action == "reject":  u.status = "rejected"
+    elif action == "expire":  u.status = "expired"
+    elif action == "suspend": u.status = "suspended"
+    db.session.commit()
+    return jsonify({"ok":True,"status":u.status})
+
+@admin_bp.route("/api/admin/syndics/<int:sid>", methods=["DELETE"])
+=== wzShowStep + register JS (scripts_core.html) ===
+1305:function wzSummary(){const name=document.getElementById('r-name').value;const city=document.getElementById('r-city').value;const country=document.getElementById('r-country').value;let resHtml='';wzData.residences.forEach((r,ri)=>{const rname=document.getElementById('wz-rn-'+ri)?.value||'—';let bHtml='';r.buildings.forEach((b,bi)=>{const bl=document.getElementById('wz-blabel-'+ri+'-'+bi)?.value||bi+1;const bf=document.getElementById('wz-bfrom-'+ri+'-'+bi)?.value||0;const bt=document.getElementById('wz-bto-'+ri+'-'+bi)?.value||0;const fee=document.getElementById('wz-bfee-'+ri+'-'+bi)?.value||0;const total=(bt&&bf&&bt>=bf)?(bt-bf+1):0;bHtml+=`<div style="margin-right:12px;font-size:11px">🏗️ عمارة ${bl} — شقق من ${bf} إلى ${bt} (${total} شقة) — ${fee} درهم/شهر</div>`;});resHtml+=`<div style="margin-bottom:6px"><b>🏢 ${rname}</b>${bHtml}</div>`;});document.getElementById('wz-summary').innerHTML=`
+1314:closeMod('mod-register');wzData={residences:[]};wzShowStep(1);document.getElementById('wz-res-list').innerHTML='';toast('✅ تم إرسال طلبك! في انتظار المصادقة');}
+1315:async function doRegister(){const name=document.getElementById('r-name').value.trim();const user=document.getElementById('r-user').value.trim();const email=document.getElementById('r-email').value.trim();const phone=document.getElementById('r-phone').value.trim();const pass=document.getElementById('r-pass').value;clearFieldErrors(['r-name','r-user','r-email','r-phone','r-pass']);let valid=true;if(!name){showFieldError('r-name','⚠️ الاسم الكامل مطلوب');valid=false;}
+=== mod-register HTML (modals.html) ===
+=== User model fields ===
+class User(db.Model):
+    __tablename__ = 'users'
+    id                 = db.Column(db.Integer, primary_key=True)
+    username           = db.Column(db.String(80),  unique=True, nullable=False)
+    password_hash      = db.Column(db.String(200), nullable=False)
+    full_name          = db.Column(db.String(120))
+    phone              = db.Column(db.String(20))
+    email              = db.Column(db.String(120))
+    city               = db.Column(db.String(80))
+    neighborhood       = db.Column(db.String(80))
+    country            = db.Column(db.String(80), default='المغرب')
+    role               = db.Column(db.String(20), default='syndic')  # admin | syndic
+    status             = db.Column(db.String(20), default='pending') # pending|active|rejected|expired
+    plan               = db.Column(db.String(20), default='free')    # free|basic|pro|enterprise
+    payment_proof      = db.Column(db.String(300))
+    pay_method         = db.Column(db.String(30))
+    payment_method      = db.Column(db.String(30))
+    total_amount        = db.Column(db.Float, default=0)
+    duration_months     = db.Column(db.Integer, default=1)
+    paypal_email       = db.Column(db.String(120))   # PayPal account for receiving payments
+    bank_rib           = db.Column(db.String(30))    # RIB pour virement/CMI
+    bank_name          = db.Column(db.String(100))   # Nom de la banque
+    payment_date       = db.Column(db.DateTime)
+    subscription_start = db.Column(db.DateTime)
+    subscription_end   = db.Column(db.DateTime)
+    approved_by        = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    approved_at        = db.Column(db.DateTime)
+    created_at         = db.Column(db.DateTime, default=datetime.utcnow)
+
+    residences = db.relationship('Residence', backref='syndic', lazy=True, foreign_keys='Residence.user_id')
+
+    def to_dict(self):
+        days_left = 0
+        if self.subscription_end:
+            delta = self.subscription_end - datetime.utcnow()
+            days_left = max(0, delta.days)
+        return {
+            'id':               self.id,
+            'username':         self.username,
+            'full_name':        self.full_name or '',
+            'phone':            self.phone or '',
+            'email':            self.email or '',
+            'city':             self.city or '',
+            'neighborhood':     self.neighborhood or '',
+            'country':          self.country or 'المغرب',
+            'role':             self.role,
+            'status':           self.status,
+            'plan':             self.plan or 'free',
+            'payment_proof':    self.payment_proof or '',
+        'pay_method':       self.pay_method if hasattr(self,'pay_method') else '',
+            'paypal_email':     self.paypal_email or '',
+            'bank_rib':         self.bank_rib or '',
+            'bank_name':        self.bank_name or '',
+            'subscription_start': self.subscription_start.strftime('%d/%m/%Y') if self.subscription_start else '',
+            'subscription_end': self.subscription_end.strftime('%d/%m/%Y') if self.subscription_end else '',
+            'days_left':        days_left,
+            'approved_at':      self.approved_at.strftime('%d/%m/%Y') if self.approved_at else '',
+            'created_at':       self.created_at.strftime('%d/%m/%Y %H:%M'),
+            'residences_count': len(self.residences),
+        'payment_method':   self.payment_method or '',

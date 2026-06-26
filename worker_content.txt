@@ -1,0 +1,11 @@
+<div class="scr" id="scr-worker-detail" style="display:none">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb">
+    <button class="btn btn-ghost btn-sm" onclick="nav('workers')">← الرجوع</button>
+    <h2 style="flex:1;margin:0;font-size:18px;font-weight:800">👷 تفاصيل العامل</h2>
+    <button class="btn btn-ghost btn-sm" onclick="location.reload()">⟳</button>
+  </div>
+  
+  <div id="worker-detail-content" style="padding:16px;background:#fff;border-radius:12px">
+    <!-- المحتوى سيتم ملاؤه بـ JavaScript -->
+  </div>
+</div>
